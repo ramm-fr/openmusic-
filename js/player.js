@@ -137,6 +137,7 @@ const Player = (() => {
     setNowPlaying(track);
     updatePlayPauseUI(true);
     if (window.App) App.onTrackPlayed(track);
+    if (window.NowPlaying) NowPlaying.onTrackChange(track);
   }
 
   function playById(id, url) {
@@ -272,6 +273,11 @@ const Player = (() => {
       if (currentTrack && window.Lyrics) Lyrics.show(currentTrack);
     });
 
+    // Open Now Playing overlay on player track area click
+    document.getElementById("player-track-btn")?.addEventListener("click", () => {
+      if (window.NowPlaying) NowPlaying.show();
+    });
+
     document.getElementById("saavn-bitrate")?.addEventListener("change", () => {
       if (currentTrack) {
         playTrack(currentTrack, SaavnAPI.getStreamUrl(currentTrack.raw, getQuality()));
@@ -285,6 +291,7 @@ const Player = (() => {
     playById,
     playNext,
     playPrev,
+    togglePlay,
     setQueue,
     setCrossfadeDuration(ms) { FADE_DURATION = ms; },
     get current() { return currentTrack; },
