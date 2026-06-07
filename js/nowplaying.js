@@ -422,6 +422,9 @@ const NowPlaying = (() => {
     // Use requestAnimationFrame to ensure DOM is painted before updating
     requestAnimationFrame(() => {
       const track = window.Player?.current;
+      console.log("[NowPlaying] show() — track:", track);
+      console.log("[NowPlaying] np-art el:", $("np-art"));
+      console.log("[NowPlaying] np-lyrics-scroll el:", $("np-lyrics-scroll"));
       if (track) updateTrack(track);
       if (window.lucide) lucide.createIcons();
     });
