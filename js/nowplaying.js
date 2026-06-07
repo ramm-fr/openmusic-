@@ -276,9 +276,14 @@ const NowPlaying = (() => {
     const art         = $("np-art");
     const placeholder = $("np-art-placeholder");
     if (track.image) {
+      art.onload  = () => { art.classList.remove("hidden"); placeholder?.classList.add("hidden"); };
+      art.onerror = () => { art.classList.add("hidden"); placeholder?.classList.remove("hidden"); };
       art.src = track.image;
-      art.classList.remove("hidden");
-      placeholder?.classList.add("hidden");
+      // If already cached, onload may not fire — force show
+      if (art.complete && art.naturalWidth) {
+        art.classList.remove("hidden");
+        placeholder?.classList.add("hidden");
+      }
     } else {
       art.classList.add("hidden");
       placeholder?.classList.remove("hidden");
@@ -346,9 +351,20 @@ const NowPlaying = (() => {
     const cleanArtist = artist.split(",")[0].split("feat.")[0].split("ft.")[0].trim();
     const cleanTitle  = title.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
 
-    // Attempt 1 — suggest by title (finds correct artist)
+    // Attempt 1 — direct with cleaned artist + title
     try {
-      const res = await fetch(
+      const r = await window.fetch(
+        `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`
+      );
+      if (r.ok) {
+        const d = await r.json();
+        if (d.lyrics) return d.lyrics.trim();
+      }
+    } catch (_) {}
+
+    // Attempt 2 — suggest by title to find correct artist
+    try {
+      const res = await window.fetch(
         `https://api.lyrics.ovh/suggest/${encodeURIComponent(cleanTitle)}`
       );
       if (res.ok) {
@@ -359,7 +375,7 @@ const NowPlaying = (() => {
           titleLower.includes(s.title?.toLowerCase())
         ) || (data.data || [])[0];
         if (match) {
-          const r2 = await fetch(
+          const r2 = await window.fetch(
             `https://api.lyrics.ovh/v1/${encodeURIComponent(match.artist.name)}/${encodeURIComponent(match.title)}`
           );
           if (r2.ok) {
@@ -370,16 +386,19 @@ const NowPlaying = (() => {
       }
     } catch (_) {}
 
-    // Attempt 2 — direct
-    try {
-      const r = await fetch(
-        `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`
-      );
-      if (r.ok) {
-        const d = await r.json();
-        if (d.lyrics) return d.lyrics.trim();
-      }
-    } catch (_) {}
+    // Attempt 3 — first word of artist only
+    const shortArtist = cleanArtist.split(" ")[0];
+    if (shortArtist !== cleanArtist) {
+      try {
+        const r = await window.fetch(
+          `https://api.lyrics.ovh/v1/${encodeURIComponent(shortArtist)}/${encodeURIComponent(cleanTitle)}`
+        );
+        if (r.ok) {
+          const d = await r.json();
+          if (d.lyrics) return d.lyrics.trim();
+        }
+      } catch (_) {}
+    }
 
     throw new Error("not found");
   }
@@ -394,14 +413,18 @@ const NowPlaying = (() => {
 
   function show() {
     inject();
+
     const overlay = $("np-overlay");
     overlay.classList.remove("np-hidden");
     overlay.classList.add("np-visible");
     isOpen = true;
 
-    const track = window.Player?.current;
-    updateTrack(track);
-    if (window.lucide) lucide.createIcons();
+    // Use requestAnimationFrame to ensure DOM is painted before updating
+    requestAnimationFrame(() => {
+      const track = window.Player?.current;
+      if (track) updateTrack(track);
+      if (window.lucide) lucide.createIcons();
+    });
 
     // Prevent body scroll
     document.body.style.overflow = "hidden";
