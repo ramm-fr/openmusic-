@@ -9,11 +9,37 @@ const Lyrics = (() => {
   // ── Fetch lyrics ──────────────────────────────────────────────────────────
 
   async function fetch(artist, title) {
-    // Clean up artist/title — remove features, brackets etc.
     const cleanArtist = artist.split(",")[0].split("feat.")[0].split("ft.")[0].trim();
     const cleanTitle  = title.replace(/\(.*?\)/g, "").replace(/\[.*?\]/g, "").trim();
 
-    // Attempt 1 — exact artist + title
+    // Attempt 1 — suggest search by title (most reliable — finds correct artist)
+    try {
+      const res = await window.fetch(
+        `https://api.lyrics.ovh/suggest/${encodeURIComponent(cleanTitle)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const results = data.data || [];
+        // Try to find a match by title similarity
+        const titleLower = cleanTitle.toLowerCase();
+        const match = results.find(s =>
+          s.title?.toLowerCase().includes(titleLower) ||
+          titleLower.includes(s.title?.toLowerCase())
+        ) || results[0];
+
+        if (match) {
+          const res2 = await window.fetch(
+            `https://api.lyrics.ovh/v1/${encodeURIComponent(match.artist.name)}/${encodeURIComponent(match.title)}`
+          );
+          if (res2.ok) {
+            const data2 = await res2.json();
+            if (data2.lyrics) return data2.lyrics.trim();
+          }
+        }
+      }
+    } catch (_) {}
+
+    // Attempt 2 — direct with cleaned artist + title
     try {
       const res = await window.fetch(
         `https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`
@@ -24,7 +50,7 @@ const Lyrics = (() => {
       }
     } catch (_) {}
 
-    // Attempt 2 — first word of artist + title (handles "Artist feat. X" cases)
+    // Attempt 3 — first word of artist
     const shortArtist = cleanArtist.split(" ")[0];
     if (shortArtist !== cleanArtist) {
       try {
@@ -37,29 +63,6 @@ const Lyrics = (() => {
         }
       } catch (_) {}
     }
-
-    // Attempt 3 — suggest search (show partial results from lyrics.ovh suggest)
-    try {
-      const res = await window.fetch(
-        `https://api.lyrics.ovh/suggest/${encodeURIComponent(cleanTitle)}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const match = (data.data || []).find(s =>
-          s.artist?.name?.toLowerCase().includes(cleanArtist.toLowerCase()) ||
-          cleanArtist.toLowerCase().includes(s.artist?.name?.toLowerCase())
-        );
-        if (match) {
-          const res2 = await window.fetch(
-            `https://api.lyrics.ovh/v1/${encodeURIComponent(match.artist.name)}/${encodeURIComponent(match.title)}`
-          );
-          if (res2.ok) {
-            const data2 = await res2.json();
-            if (data2.lyrics) return data2.lyrics.trim();
-          }
-        }
-      }
-    } catch (_) {}
 
     throw new Error("Lyrics not found");
   }

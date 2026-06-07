@@ -47,8 +47,5 @@ function initAppwrite() {
   console.log("[Appwrite] SDK initialised.");
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initAppwrite);
-} else {
-  initAppwrite();
-}
+// Run immediately — scripts are at bottom of body so DOM is ready
+initAppwrite();
