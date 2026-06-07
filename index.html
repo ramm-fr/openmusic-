@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>openmusic — sign in</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/appwrite-sdk.js"></script>
+  <script src="js/appwrite.js"></script>
+</head>
+<body class="auth-page">
+
+  <div class="auth-shell">
+
+    <!-- LEFT — login form -->
+    <main class="auth-card">
+      <div class="auth-card-inner">
+
+        <!-- Logo -->
+        <div class="auth-logo-row">
+          <img src="favicon-dark.svg" width="22" height="22" alt="openmusic" class="logo-icon-light" />
+          <img src="favicon.svg"      width="22" height="22" alt="openmusic" class="logo-icon-dark" />
+          <span class="auth-logo-name">openmusic</span>
+        </div>
+
+        <h2 class="auth-card-title">Welcome back</h2>
+        <p class="auth-card-sub">Sign in to continue listening.</p>
+
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" data-tab="login" role="tab" aria-selected="true">Sign in</button>
+          <button type="button" class="auth-tab" data-tab="register" role="tab" aria-selected="false">Register</button>
+        </div>
+
+        <form id="login-form" class="auth-form" autocomplete="on">
+          <label>
+            <span>Email</span>
+            <div class="input-wrap">
+              <i data-lucide="mail"></i>
+              <input type="email" name="email" required placeholder="your@email.com" />
+            </div>
+          </label>
+          <label>
+            <span>Password</span>
+            <div class="input-wrap">
+              <i data-lucide="lock-keyhole"></i>
+              <input type="password" name="password" required minlength="6" placeholder="••••••••" />
+            </div>
+          </label>
+          <p id="auth-error" class="form-error" hidden></p>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i data-lucide="log-in"></i>
+            Sign in
+          </button>
+        </form>
+
+        <form id="register-form" class="auth-form hidden" autocomplete="on">
+          <label>
+            <span>Nickname</span>
+            <div class="input-wrap">
+              <i data-lucide="user-round"></i>
+              <input type="text" name="nickname" required placeholder="what should we call you?" />
+            </div>
+          </label>
+          <label>
+            <span>Email</span>
+            <div class="input-wrap">
+              <i data-lucide="mail"></i>
+              <input type="email" name="email" required placeholder="your@email.com" />
+            </div>
+          </label>
+          <label>
+            <span>Password</span>
+            <div class="input-wrap">
+              <i data-lucide="lock-keyhole"></i>
+              <input type="password" name="password" required minlength="6" placeholder="min. 6 characters" />
+            </div>
+          </label>
+          <p id="register-error" class="form-error" hidden></p>
+          <button type="submit" class="btn btn-primary btn-block">
+            <i data-lucide="user-round-plus"></i>
+            Create account
+          </button>
+        </form>
+
+      </div>
+    </main>
+
+    <!-- RIGHT — brand panel -->
+    <aside class="auth-brand">
+      <!-- Grid pattern -->
+      <div class="auth-brand-bg"></div>
+      <!-- Scanlines -->
+      <div class="auth-brand-scanlines"></div>
+
+      <div class="auth-brand-content">
+        <!-- Top label -->
+        <div class="auth-brand-icon">
+          <img src="favicon-dark.svg" width="22" height="22" alt="openmusic" style="filter:invert(1);image-rendering:pixelated;" />
+          <span class="auth-brand-name">openmusic</span>
+        </div>
+
+        <!-- Big favicon -->
+        <div class="auth-brand-big-logo">
+          <img src="favicon-dark.svg" alt="openmusic" class="auth-brand-big-logo-img" />
+        </div>
+
+        <!-- Title & desc -->
+        <div class="auth-brand-bottom">
+          <h1>openmusic</h1>
+          <p>English music, beautifully minimal. Nothing else.</p>
+          <div class="auth-tagline">
+            <i data-lucide="radio"></i>
+            <span>Stream &nbsp;·&nbsp; Like &nbsp;·&nbsp; Queue &nbsp;·&nbsp; Download</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    lucide.createIcons();
+    Auth.initLoginPage();
+  </script>
+</body>
+</html>

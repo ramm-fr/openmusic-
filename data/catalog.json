@@ -1,0 +1,98 @@
+{
+  "title": "Music Catalog",
+  "description": "Curated search seeds — English, Hindi, Telugu, Tamil and more",
+  "featuredQueries": [
+    "Busy On Other Call Jackey Mishra",
+    "Remember The Rain 21st Century",
+    "One More Hour Tame Impala",
+    "Thriller Michael Jackson",
+    "Sunflower Rex Orange County",
+    "Kesariya Arijit Singh",
+    "Srivalli Sid Sriram",
+    "Kuhu Kuhu Shreya Ghoshal",
+    "Rowdy Baby Dhanush",
+    "Buttabomma Armaan Malik"
+  ],
+  "langQueries": {
+    "english": [
+      "Busy On Other Call Jackey Mishra",
+      "Remember The Rain 21st Century",
+      "One More Hour Tame Impala",
+      "Thriller Michael Jackson",
+      "Sunflower Rex Orange County",
+      "All I Wanted Paramore",
+      "Exit Music Radiohead",
+      "I Want You Back Jackson 5"
+    ],
+    "hindi": [
+      "Kesariya Arijit Singh",
+      "Tum Hi Ho Arijit Singh",
+      "Raabta Agent Sai",
+      "Ik Vaari Aa Arijit Singh",
+      "Channa Mereya Arijit Singh",
+      "Phir Bhi Tumko Chahunga Half Girlfriend",
+      "Tera Ban Jaunga Kabir Singh",
+      "Bekhayali Kabir Singh"
+    ],
+    "telugu": [
+      "Srivalli Sid Sriram",
+      "Buttabomma Armaan Malik",
+      "Saranga Dariya Mangli",
+      "Naatu Naatu RRR",
+      "Rowdy Baby Dhanush Telugu",
+      "Inkem Inkem Inkem Kaavaale Geetha Govindam",
+      "Butta Bomma Ala Vaikunthapurramuloo",
+      "Ye Yem Cheppanu"
+    ],
+    "tamil": [
+      "Rowdy Baby Dhanush",
+      "Kuhu Kuhu Shreya Ghoshal",
+      "Kannaana Kanney Viswasam",
+      "Nenjame Nenjame",
+      "Venmathi Malar",
+      "Inaindha Kaigal",
+      "Mazhai Kuruvi 96",
+      "Uyire Uyire"
+    ]
+  },
+  "homeTracks": [
+    { "q": "Busy On Other Call Jackey Mishra",             "name": "Busy On Other Call",               "artist": "Jackey Mishra",           "lang": "english" },
+    { "q": "Remember The Rain 21st Century",               "name": "Remember The Rain",                 "artist": "21st Century",            "lang": "english" },
+    { "q": "One More Hour Tame Impala",                    "name": "One More Hour",                     "artist": "Tame Impala",             "lang": "english" },
+    { "q": "Parada Jarupukoni Hemachandra",                "name": "Parada Jarupukoni",                 "artist": "Hemachandra",             "lang": "telugu"  },
+    { "q": "Thriller Michael Jackson",                     "name": "Thriller",                          "artist": "Michael Jackson",         "lang": "english" },
+    { "q": "Earrings Malcolm Todd",                        "name": "Earrings",                          "artist": "Malcolm Todd",            "lang": "english" },
+    { "q": "Safar Bayaan Sherazam",                        "name": "Safar",                             "artist": "Bayaan, Sherazam",        "lang": "hindi"   },
+    { "q": "Balleilakka SP Balasubramaniam",               "name": "Balleilakka",                       "artist": "S.P.Balasubramaniam",     "lang": "tamil"   },
+    { "q": "undressed sombr",                              "name": "undressed",                         "artist": "sombr",                   "lang": "english" },
+    { "q": "Selfish Angela Diano",                         "name": "Selfish",                           "artist": "Angela Diano",            "lang": "english" },
+    { "q": "Impostor Syndrome Sidney Gish",                "name": "Impostor Syndrome",                 "artist": "Sidney Gish",             "lang": "english" },
+    { "q": "Sunflower Rex Orange County",                  "name": "Sunflower E",                       "artist": "Rex Orange County",       "lang": "english" },
+    { "q": "All I Wanted Paramore",                        "name": "All I Wanted",                      "artist": "Paramore",                "lang": "english" },
+    { "q": "Exit Music For A Film Radiohead",              "name": "Exit Music (For A Film)",            "artist": "Radiohead",               "lang": "english" },
+    { "q": "Mind Over Matter Young the Giant",             "name": "Mind Over Matter",                  "artist": "Young the Giant",         "lang": "english" },
+    { "q": "Mayonaka no Door Miki Matsubara",              "name": "Mayonaka no Door~stay with me",     "artist": "Miki Matsubara",          "lang": "english" },
+    { "q": "I Want You Back Jackson 5",                    "name": "I Want You Back",                   "artist": "Jackson 5",               "lang": "english" },
+    { "q": "Levitating Dua Lipa",                          "name": "Levitating",                        "artist": "Dua Lipa",               "lang": "english" },
+    { "q": "Kesariya Arijit Singh",                        "name": "Kesariya",                          "artist": "Arijit Singh",            "lang": "hindi"   },
+    { "q": "Tum Hi Ho Arijit Singh",                       "name": "Tum Hi Ho",                         "artist": "Arijit Singh",            "lang": "hindi"   },
+    { "q": "Channa Mereya Arijit Singh",                   "name": "Channa Mereya",                     "artist": "Arijit Singh",            "lang": "hindi"   },
+    { "q": "Bekhayali Kabir Singh",                        "name": "Bekhayali",                         "artist": "Sachet Tandon",           "lang": "hindi"   },
+    { "q": "Srivalli Sid Sriram",                          "name": "Srivalli",                          "artist": "Sid Sriram",              "lang": "telugu"  },
+    { "q": "Buttabomma Armaan Malik",                      "name": "Butta Bomma",                       "artist": "Armaan Malik",            "lang": "telugu"  },
+    { "q": "Saranga Dariya Mangli",                        "name": "Saranga Dariya",                    "artist": "Mangli",                  "lang": "telugu"  },
+    { "q": "Naatu Naatu RRR",                              "name": "Naatu Naatu",                       "artist": "Rahul Sipligunj, Kaala Bhairava", "lang": "telugu" },
+    { "q": "Inkem Inkem Kaavaale Geetha Govindam",         "name": "Inkem Inkem Inkem Kaavaale",        "artist": "Sid Sriram",              "lang": "telugu"  },
+    { "q": "Rowdy Baby Dhanush",                           "name": "Rowdy Baby",                        "artist": "Dhanush, Dhee",           "lang": "tamil"   },
+    { "q": "Kuhu Kuhu Shreya Ghoshal",                     "name": "Kuhu Kuhu",                         "artist": "Shreya Ghoshal",          "lang": "tamil"   },
+    { "q": "Kannaana Kanney Viswasam",                     "name": "Kannaana Kanney",                   "artist": "D. Imman",                "lang": "tamil"   },
+    { "q": "Mazhai Kuruvi 96",                             "name": "Mazhai Kuruvi",                     "artist": "Govind Vasantha",         "lang": "tamil"   }
+  ],
+  "featuredArtists": [
+    "Arijit Singh", "Sid Sriram", "Dhanush", "Shreya Ghoshal",
+    "Tame Impala", "Michael Jackson", "Paramore", "Radiohead",
+    "Armaan Malik", "Anirudh Ravichander", "S.P.Balasubramaniam",
+    "Jackson 5", "Rex Orange County", "Young the Giant"
+  ],
+  "defaultSearch": "top hits"
+}
