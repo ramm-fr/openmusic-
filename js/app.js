@@ -979,193 +979,120 @@ const App = (() => {
 
   /* ── Settings view ── */
   function setupSettingsView() {
-    const session = Auth.getSession();
-    if (!session) return;
+    if (!Auth.getSession()) return;
 
-    // Use Appwrite-backed settings; fall back to in-memory defaults
-    // collectSettings() reads current DOM state, persisted values already
-    // applied on load via applyPersistedSettings().
+    // Prevent double-binding — mark as already set up
+    if (document.getElementById("view-settings")._bound) return;
+    document.getElementById("view-settings")._bound = true;
 
-    function setSavePref(key, val) {
-      const current = collectSettings();
-      current[key] = val;
-      persistSettings(current);
-    }
-    function getSetPref(key, def) {
-      // Read from DOM where possible since applyPersistedSettings() already set it
-      const el = document.getElementById({
-        crossfade:      "set-crossfade",
-        crossfadeDur:   "set-crossfade-dur",
-        defaultQuality: "set-default-quality",
-        compactSidebar: "set-compact-sidebar",
-        devMode:        "set-dev-mode",
-        devLogging:     "set-dev-logging",
-        devStats:       "set-dev-stats",
-        devLatency:     "set-dev-latency",
-      }[key]);
-      if (el) {
-        if (el.type === "checkbox") return el.checked;
-        return el.value !== undefined ? el.value : def;
-      }
-      return def;
+    // ── Helpers ──
+    function savePref(key, val) {
+      const s = collectSettings();
+      s[key] = val;
+      persistSettings(s);
     }
 
-    // ── Account section (Appwrite-powered) ──
-    // Pre-fill display name
-    const nameInput  = document.getElementById("acc-nickname");
-    const emailInput = document.getElementById("acc-email");
-    if (nameInput)  nameInput.value  = session.nickname || "";
-    if (emailInput) emailInput.value = session.email    || "";
-
-    // Update name form
-    const profileForm = document.getElementById("account-profile-form");
-    if (profileForm) {
-      const fresh = profileForm.cloneNode(true);
-      profileForm.parentNode.replaceChild(fresh, profileForm);
-      fresh.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const msg  = document.getElementById("account-profile-msg");
-        const name = document.getElementById("acc-nickname")?.value.trim();
-        if (!name) return showAccountMsg(msg, "Name cannot be empty.", "error");
-        showAccountMsg(msg, "Saving…", "info");
-        const r = await Auth.updateName(name);
-        if (!r.ok) return showAccountMsg(msg, r.error, "error");
-        setupUser(r.session);
-        showAccountMsg(msg, "Name updated.", "success");
-      });
-    }
-
-    // Update email form
-    const emailForm = document.getElementById("account-email-form");
-    if (emailForm) {
-      const fresh = emailForm.cloneNode(true);
-      emailForm.parentNode.replaceChild(fresh, emailForm);
-      fresh.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const msg      = document.getElementById("account-email-msg");
-        const newEmail = document.getElementById("acc-new-email")?.value.trim();
-        const pw       = document.getElementById("acc-email-pw")?.value;
-        if (!newEmail || !pw) return showAccountMsg(msg, "Fill in all fields.", "error");
-        showAccountMsg(msg, "Updating…", "info");
-        const r = await Auth.updateEmail(newEmail, pw);
-        if (!r.ok) return showAccountMsg(msg, r.error, "error");
-        setupUser(r.session);
-        showAccountMsg(msg, "Email updated.", "success");
-      });
-    }
-
-    // Change password form
-    const passwordForm = document.getElementById("account-password-form");
-    if (passwordForm) {
-      const fresh = passwordForm.cloneNode(true);
-      passwordForm.parentNode.replaceChild(fresh, passwordForm);
-      fresh.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const msg       = document.getElementById("account-password-msg");
-        const oldPw     = document.getElementById("acc-current-pw")?.value;
-        const newPw     = document.getElementById("acc-new-pw")?.value;
-        const confirmPw = document.getElementById("acc-confirm-pw")?.value;
-        if (!oldPw)             return showAccountMsg(msg, "Enter your current password.", "error");
-        if (newPw?.length < 8)  return showAccountMsg(msg, "New password must be at least 8 characters.", "error");
-        if (newPw !== confirmPw) return showAccountMsg(msg, "Passwords do not match.", "error");
-        showAccountMsg(msg, "Updating…", "info");
-        const r = await Auth.updatePassword(newPw, oldPw);
-        if (!r.ok) return showAccountMsg(msg, r.error, "error");
-        fresh.reset();
-        showAccountMsg(msg, "Password updated.", "success");
-      });
-    }
-
-    // ── Playback settings ──
+    // ── Playback — Crossfade toggle ──
     const cfCheck = document.getElementById("set-crossfade");
     if (cfCheck) {
-      cfCheck.checked = getSetPref("crossfade", true);
-      cfCheck.addEventListener("change", () => setSavePref("crossfade", cfCheck.checked));
+      cfCheck.addEventListener("change", () => {
+        const enabled = cfCheck.checked;
+        Player.setCrossfadeDuration(enabled
+          ? parseFloat(document.getElementById("set-crossfade-dur")?.value || "1.8") * 1000
+          : 0);
+        savePref("crossfade", enabled);
+      });
     }
+
+    // ── Playback — Crossfade duration ──
     const cfDur   = document.getElementById("set-crossfade-dur");
     const cfLabel = document.getElementById("set-crossfade-label");
     if (cfDur) {
-      cfDur.value = getSetPref("crossfadeDur", 1.8);
-      cfLabel && (cfLabel.textContent = cfDur.value + " s");
       cfDur.addEventListener("input", () => {
-        cfLabel && (cfLabel.textContent = cfDur.value + " s");
-        setSavePref("crossfadeDur", parseFloat(cfDur.value));
-        if (window.Player) Player.setCrossfadeDuration(parseFloat(cfDur.value) * 1000);
+        const val = parseFloat(cfDur.value);
+        if (cfLabel) cfLabel.textContent = val.toFixed(1) + " s";
+        if (cfCheck?.checked) Player.setCrossfadeDuration(val * 1000);
+        savePref("crossfadeDur", val);
       });
     }
+
+    // ── Playback — Default quality ──
     const defQ = document.getElementById("set-default-quality");
     if (defQ) {
-      defQ.value = getSetPref("defaultQuality", "160kbps");
       defQ.addEventListener("change", () => {
-        setSavePref("defaultQuality", defQ.value);
         const bitrateEl = document.getElementById("saavn-bitrate");
-        if (bitrateEl) { bitrateEl.value = defQ.value; bitrateEl.dispatchEvent(new Event("change")); }
+        if (bitrateEl) {
+          bitrateEl.value = defQ.value;
+          bitrateEl.dispatchEvent(new Event("change"));
+        }
+        savePref("defaultQuality", defQ.value);
       });
     }
 
-    // ── Appearance settings ──
+    // ── Appearance — Dark mode ──
     const darkToggle = document.getElementById("set-dark-mode");
     if (darkToggle) {
-      darkToggle.checked = document.documentElement.getAttribute("data-theme") === "dark";
       darkToggle.addEventListener("change", () => {
-        document.getElementById("btn-theme")?.click();
-        setTimeout(() => { darkToggle.checked = document.documentElement.getAttribute("data-theme") === "dark"; }, 50);
+        applyTheme(darkToggle.checked ? "dark" : "light");
+        // applyTheme already calls persistSettings via its own path
       });
-    }
-    const compactToggle = document.getElementById("set-compact-sidebar");
-    if (compactToggle) {
-      compactToggle.checked = getSetPref("compactSidebar", false);
-      compactToggle.addEventListener("change", () => {
-        setSavePref("compactSidebar", compactToggle.checked);
-        document.getElementById("sidebar")?.classList.toggle("sidebar--compact", compactToggle.checked);
-      });
-      if (getSetPref("compactSidebar", false))
-        document.getElementById("sidebar")?.classList.add("sidebar--compact");
     }
 
-    // ── Developer options ──
+    // ── Appearance — Compact sidebar ──
+    const compactToggle = document.getElementById("set-compact-sidebar");
+    if (compactToggle) {
+      compactToggle.addEventListener("change", () => {
+        document.getElementById("sidebar")?.classList.toggle("sidebar--compact", compactToggle.checked);
+        savePref("compactSidebar", compactToggle.checked);
+      });
+    }
+
+    // ── Developer — Enable toggle ──
     const devToggle = document.getElementById("set-dev-mode");
     const devPanel  = document.getElementById("dev-panel");
     const devBadge  = document.getElementById("dev-badge");
+
     function applyDevMode(on) {
       devPanel?.classList.toggle("hidden", !on);
-      if (devBadge) { devBadge.textContent = on ? "ON" : "OFF"; devBadge.classList.toggle("dev-badge--on", on); }
-      setSavePref("devMode", on);
-    }
-    if (devToggle) {
-      const devOn = getSetPref("devMode", false);
-      devToggle.checked = devOn;
-      applyDevMode(devOn);
-      devToggle.addEventListener("change", () => applyDevMode(devToggle.checked));
+      if (devBadge) {
+        devBadge.textContent = on ? "ON" : "OFF";
+        devBadge.classList.toggle("dev-badge--on", on);
+      }
     }
 
+    if (devToggle) {
+      devToggle.addEventListener("change", () => {
+        applyDevMode(devToggle.checked);
+        savePref("devMode", devToggle.checked);
+      });
+      applyDevMode(devToggle.checked); // apply current state on open
+    }
+
+    // ── Developer — Console logging ──
     const logToggle = document.getElementById("set-dev-logging");
     if (logToggle) {
-      logToggle.checked = getSetPref("devLogging", false);
       logToggle.addEventListener("change", () => {
-        setSavePref("devLogging", logToggle.checked);
         window._devLogging = logToggle.checked;
+        savePref("devLogging", logToggle.checked);
       });
-      window._devLogging = getSetPref("devLogging", false);
     }
 
+    // ── Developer — Show system stats ──
     const statsToggle = document.getElementById("set-dev-stats");
     if (statsToggle) {
-      statsToggle.checked = getSetPref("devStats", true);
-      document.getElementById("sys-stats")?.classList.toggle("hidden", !statsToggle.checked);
       statsToggle.addEventListener("change", () => {
-        setSavePref("devStats", statsToggle.checked);
         document.getElementById("sys-stats")?.classList.toggle("hidden", !statsToggle.checked);
+        savePref("devStats", statsToggle.checked);
       });
     }
 
+    // ── Developer — API latency ──
     const latToggle = document.getElementById("set-dev-latency");
     if (latToggle) {
-      latToggle.checked = getSetPref("devLatency", false);
-      latToggle.addEventListener("change", () => setSavePref("devLatency", latToggle.checked));
+      latToggle.addEventListener("change", () => savePref("devLatency", latToggle.checked));
     }
 
-    // Appwrite connection status in dev panel
+    // ── Developer — Appwrite status ──
     const appwriteStatus = document.getElementById("dev-appwrite-status");
     if (appwriteStatus && window.AppwriteClient) {
       appwriteStatus.textContent = "Checking…";
@@ -1174,36 +1101,38 @@ const App = (() => {
         .catch(() => { appwriteStatus.textContent = "✗ Unreachable"; appwriteStatus.style.color = "#ef4444"; });
     }
 
-    document.getElementById("btn-ls-inspect")?.addEventListener("click", () => {
+    // ── Developer — Appwrite data inspector ──
+    document.getElementById("btn-ls-inspect")?.addEventListener("click", async () => {
       const out = document.getElementById("dev-ls-output");
       if (!out) return;
       out.classList.remove("hidden");
-      const keys = Object.keys(localStorage).filter(k => k.startsWith("openmusic"));
-      if (!keys.length) { out.textContent = "No openmusic keys found."; return; }
-      out.innerHTML = keys.map(k => {
-        let val = localStorage.getItem(k);
-        try { val = JSON.stringify(JSON.parse(val), null, 2); } catch {}
-        return `<div class="dev-ls-key">${escapeHtml(k)}</div><pre class="dev-ls-val">${escapeHtml(val)}</pre>`;
+      out.textContent = "Loading…";
+      const result = await DB.loadUserData();
+      if (!result.ok) { out.textContent = "Failed to load: " + result.error; return; }
+      out.innerHTML = Object.entries(result.data).map(([k, v]) => {
+        const str = typeof v === "string" ? v : JSON.stringify(v, null, 2);
+        return `<div class="dev-ls-key">${escapeHtml(k)}</div><pre class="dev-ls-val">${escapeHtml(str)}</pre>`;
       }).join("");
     });
 
+    // ── Developer — Clear all data ──
     document.getElementById("btn-dev-clear-storage")?.addEventListener("click", async () => {
       const confirmed = await customConfirm("Wipe all your data from Appwrite? This cannot be undone.", "Clear All Data");
       if (!confirmed) return;
-      // Clear Appwrite document
       await DB.saveUserData({ liked: [], queue: [], recent: [], playlists: [], settings: {} });
-      // Also clear local caches
       Object.keys(localStorage).filter(k => k.startsWith("openmusic")).forEach(k => localStorage.removeItem(k));
       Auth.logout();
     });
 
-    // ── Danger zone ──
+    // ── Danger zone — Sign out ──
     const logoutBtn = document.getElementById("btn-account-logout");
     if (logoutBtn) {
       const fresh = logoutBtn.cloneNode(true);
       logoutBtn.parentNode.replaceChild(fresh, logoutBtn);
       fresh.addEventListener("click", () => Auth.logout());
     }
+
+    // ── Danger zone — Delete account ──
     const deleteBtn = document.getElementById("btn-delete-account");
     if (deleteBtn) {
       const fresh = deleteBtn.cloneNode(true);
@@ -1214,19 +1143,59 @@ const App = (() => {
           "Delete Account"
         );
         if (!confirmed) return;
-        ["liked","queue","recent","playlists"].forEach(k => localStorage.removeItem(Auth.userDataKey(k)));
+        await DB.saveUserData({ liked: [], queue: [], recent: [], playlists: [], settings: {} });
         await Auth.deleteAccount();
       });
     }
   }
 
-  function showAccountMsg(el, msg, type) {
-    if (!el) return;
-    el.textContent = msg;
-    el.className = `account-msg account-msg--${type}`;
-    el.classList.remove("hidden");
-    clearTimeout(el._t);
-    el._t = setTimeout(() => el.classList.add("hidden"), 4000);
+  /* Sync the settings UI to reflect current saved values — called on open */
+  function syncSettingsUI() {
+    const s = collectSettings();
+
+    // Crossfade
+    const cfCheck = document.getElementById("set-crossfade");
+    const cfDur   = document.getElementById("set-crossfade-dur");
+    const cfLabel = document.getElementById("set-crossfade-label");
+    if (cfCheck) cfCheck.checked = s.crossfade ?? true;
+    if (cfDur)   { cfDur.value = s.crossfadeDur ?? 1.8; }
+    if (cfLabel) cfLabel.textContent = (s.crossfadeDur ?? 1.8).toFixed(1) + " s";
+
+    // Default quality
+    const defQ = document.getElementById("set-default-quality");
+    if (defQ) defQ.value = s.defaultQuality || "160kbps";
+
+    // Dark mode
+    const darkToggle = document.getElementById("set-dark-mode");
+    if (darkToggle) darkToggle.checked = s.theme === "dark";
+
+    // Compact sidebar
+    const compactToggle = document.getElementById("set-compact-sidebar");
+    if (compactToggle) compactToggle.checked = s.compactSidebar ?? false;
+
+    // Dev mode
+    const devToggle = document.getElementById("set-dev-mode");
+    if (devToggle) devToggle.checked = s.devMode ?? false;
+    document.getElementById("dev-panel")?.classList.toggle("hidden", !(s.devMode ?? false));
+    const devBadge = document.getElementById("dev-badge");
+    if (devBadge) {
+      devBadge.textContent = s.devMode ? "ON" : "OFF";
+      devBadge.classList.toggle("dev-badge--on", !!s.devMode);
+    }
+
+    // Dev sub-toggles
+    const logToggle = document.getElementById("set-dev-logging");
+    if (logToggle) logToggle.checked = s.devLogging ?? false;
+    window._devLogging = s.devLogging ?? false;
+
+    const statsToggle = document.getElementById("set-dev-stats");
+    if (statsToggle) {
+      statsToggle.checked = s.devStats ?? true;
+      document.getElementById("sys-stats")?.classList.toggle("hidden", !(s.devStats ?? true));
+    }
+
+    const latToggle = document.getElementById("set-dev-latency");
+    if (latToggle) latToggle.checked = s.devLatency ?? false;
   }
 
   function setupNav() {
@@ -1237,7 +1206,7 @@ const App = (() => {
         if (item.dataset.view === "queue")     renderQueue();
         if (item.dataset.view === "recent")    renderRecent();
         if (item.dataset.view === "playlists") renderPlaylists();
-        if (item.dataset.view === "settings")  setupSettingsView();
+        if (item.dataset.view === "settings")  syncSettingsUI();
       });
     });
 
@@ -1334,7 +1303,7 @@ const App = (() => {
       document.getElementById("popup-settings")?.addEventListener("click", () => {
         closePopup();
         switchView("settings");
-        setupSettingsView();
+        syncSettingsUI();
       });
       document.getElementById("popup-logout")?.addEventListener("click", () => Auth.logout());
     }
@@ -1540,6 +1509,7 @@ const App = (() => {
     setupSidebarToggle();
     setupModal();
     setupAlertDialog();
+    setupSettingsView();   // bind listeners once
     Player.init();
     setupCharacterAnimation();
 
@@ -1548,6 +1518,7 @@ const App = (() => {
     renderQueue();
     renderRecent();
     renderPlaylists();
+    syncSettingsUI();      // reflect loaded prefs in the UI
     await loadHome();
     await new Promise(r => setTimeout(r, 2500));
     await SaavnSearch.runInitialSearch();
