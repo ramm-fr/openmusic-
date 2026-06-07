@@ -2815,6 +2815,9 @@ input[type="range"]:active::-webkit-slider-thumb {
   position: relative; z-index: 2;
 }
 
+/* Hide broken image icon when src is empty */
+.np-art[src=""] { visibility: hidden; }
+
 .np-art-placeholder {
   width: 100%; height: 100%;
   border-radius: 16px;

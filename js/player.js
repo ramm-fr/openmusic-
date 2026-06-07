@@ -274,7 +274,9 @@ const Player = (() => {
     });
 
     // Open Now Playing overlay on player track area click
-    document.getElementById("player-track-btn")?.addEventListener("click", () => {
+    document.getElementById("player-track-btn")?.addEventListener("click", (e) => {
+      // Don't open if clicking a button inside the track area
+      if (e.target.closest("button")) return;
       if (window.NowPlaying) NowPlaying.show();
     });
 

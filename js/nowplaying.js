@@ -40,7 +40,7 @@ const NowPlaying = (() => {
         <!-- LEFT — art + info + controls -->
         <div class="np-left">
           <div class="np-art-wrap">
-            <img id="np-art" src="" alt="" class="np-art" />
+            <img id="np-art" src="" alt="" class="np-art hidden" />
             <div class="np-art-placeholder hidden" id="np-art-placeholder">
               <i data-lucide="music-4"></i>
             </div>
