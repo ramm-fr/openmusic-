@@ -83,8 +83,10 @@ const Auth = (() => {
       const me = await account.get();
       return cacheSession(me);
     } catch (_) {
-      clearCache();
-      return null;
+      // Don't clear cache or logout here — the local session cache is still valid.
+      // Appwrite session cookies may not persist across hard reloads in some
+      // browser/CORS configurations. We keep the user logged in via localStorage.
+      return getSession();
     }
   }
 
@@ -164,11 +166,13 @@ const Auth = (() => {
   // ── Login page init ───────────────────────────────────────────────────────
 
   function initLoginPage() {
-    // If already cached, verify with Appwrite then redirect
-    if (getSession()) {
+    // If locally cached session exists, try Appwrite — redirect if valid.
+    // If Appwrite fails but local cache exists, still redirect (offline-tolerant).
+    const local = getSession();
+    if (local) {
       refreshSession().then(s => {
         if (s) window.location.href = "dashboard.html";
-        else clearCache();
+        // If refreshSession returned null (no local either), stay on login page
       });
       return;
     }
