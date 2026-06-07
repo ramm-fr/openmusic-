@@ -134,6 +134,8 @@ const App = (() => {
     const result = await DB.loadUserData();
     if (!result.ok) {
       console.warn("[App] Could not load user data from Appwrite:", result.error);
+      // Don't log out — keep user on dashboard with empty data
+      liked = []; userQueue = []; recent = []; playlists = [];
       return;
     }
     const d = result.data;
@@ -142,7 +144,6 @@ const App = (() => {
     recent    = SaavnAPI.dedupeById(d.recent    || []);
     playlists = d.playlists || [];
 
-    // Load settings/prefs from Appwrite and apply them
     if (d.settings && typeof d.settings === "object") {
       applyPersistedSettings(d.settings);
     }
@@ -1492,11 +1493,6 @@ const App = (() => {
     const session = Auth.requireAuth();
     if (!session) return;
 
-    // Refresh Appwrite session in background — updates cached name/email if changed
-    Auth.refreshSession().then(fresh => {
-      if (fresh) setupUser(fresh);
-    });
-
     setupTheme();
     setupUser(session);
     setupQualityIndicator();
@@ -1522,6 +1518,12 @@ const App = (() => {
     await loadHome();
     await new Promise(r => setTimeout(r, 2500));
     await SaavnSearch.runInitialSearch();
+
+    // Refresh Appwrite session silently in background after everything loads.
+    // Never log out on failure — localStorage session is the source of truth.
+    Auth.refreshSession().then(fresh => {
+      if (fresh && fresh.id) setupUser(fresh);
+    }).catch(() => {});
   }
 
   return {
