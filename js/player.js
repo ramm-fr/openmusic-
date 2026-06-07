@@ -268,6 +268,10 @@ const Player = (() => {
       if (currentTrack && window.App) App.downloadTrack(currentTrack.id, currentTrack);
     });
 
+    document.getElementById("btn-lyrics")?.addEventListener("click", () => {
+      if (currentTrack && window.Lyrics) Lyrics.show(currentTrack);
+    });
+
     document.getElementById("saavn-bitrate")?.addEventListener("change", () => {
       if (currentTrack) {
         playTrack(currentTrack, SaavnAPI.getStreamUrl(currentTrack.raw, getQuality()));
