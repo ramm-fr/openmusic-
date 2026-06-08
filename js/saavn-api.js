@@ -110,7 +110,52 @@ const SaavnAPI = (() => {
     });
   }
 
-  // ── Track normalisation ───────────────────────────────────────────────────
+  // ── Original-only filter ─────────────────────────────────────────────────
+  // Blocks covers, remixes, karaoke, tributes, mashups, instrumentals etc.
+  const NON_ORIGINAL_PATTERNS = [
+    /\bremix\b/i,
+    /\bcover\b/i,
+    /\bkaraoke\b/i,
+    /\btribute\b/i,
+    /\bmashup\b/i,
+    /\binstrumental\b/i,
+    /\bacoustic version\b/i,
+    /\bacoustic cover\b/i,
+    /\bpiano version\b/i,
+    /\bstring version\b/i,
+    /\borchestral\b/i,
+    /\bnightcore\b/i,
+    /\bslowed\b/i,
+    /\breverb\b/i,
+    /\blofi\b/i,
+    /\blo-fi\b/i,
+    /\b8 bit\b/i,
+    /\b8bit\b/i,
+    /\bchillout\b/i,
+    /\bbollywood mix\b/i,
+    /\bjukebox\b/i,
+    /\bfull album\b/i,
+    /\bmedley\b/i,
+    /\bmade famous\b/i,
+    /\bin the style of\b/i,
+    /\boriginally performed\b/i,
+    /\bsped up\b/i,
+    /\btiktok\b/i,
+  ];
+
+  function isOriginal(raw) {
+    const name   = (raw.name   || "").toLowerCase();
+    const album  = (typeof raw.album === "string" ? raw.album : raw.album?.name || "").toLowerCase();
+    const artist = (raw.primaryArtists || raw.music || "").toLowerCase();
+
+    // Check name, album and artist for non-original patterns
+    for (const pat of NON_ORIGINAL_PATTERNS) {
+      if (pat.test(name))   return false;
+      if (pat.test(album))  return false;
+      if (pat.test(artist)) return false;
+    }
+    return true;
+  }
   function getImage(track, preferLarge = false) {
     const images = track.image || [];
     if (!images.length) return "";
@@ -200,9 +245,11 @@ const SaavnAPI = (() => {
     const results = json.data?.results || [];
 
     // Filter by language — keep only supported languages unless "all"
+    // Also filter out non-original tracks (covers, remixes, karaoke etc.)
     const filtered = results.filter(t => {
       const l = getLang(t);
-      if (!SUPPORTED_LANGS.has(l)) return false;          // skip unknown langs
+      if (!SUPPORTED_LANGS.has(l)) return false;
+      if (!isOriginal(t)) return false;
       if (langFilter === "all") return true;
       return l === langFilter.toLowerCase();
     });
@@ -224,6 +271,7 @@ const SaavnAPI = (() => {
     SUPPORTED_LANGS,
     searchSongs,
     filterEnglishOnly,
+    isOriginal,
     dedupeById,
     smartDedupe,
     normalizeTrack,
